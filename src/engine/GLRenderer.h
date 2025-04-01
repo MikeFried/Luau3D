@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#define NOMINMAX
+#include <windows.h>
 #include <GL/gl.h>
 
 class GLRenderer {
@@ -27,8 +29,15 @@ public:
     int getWidth() const { return width; }
     int getHeight() const { return height; }
 
+    // Check if window is still open
+    bool isWindowOpen() const;
+
 private:
     int width;
     int height;
     float clearColor[4];
+    HWND hwnd;
+    HDC hdc;
+    HGLRC hrc;
+    bool windowOpen;
 }; 

@@ -3,6 +3,7 @@ project(Luau3D VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Add source files
 set(SOURCES
@@ -15,24 +16,40 @@ set(SOURCES
     src/engine/GLRenderer.h
 )
 
-# Add header directories
-include_directories(
-    ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/vendor/luau
-)
-
 # Create executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-# Add Luau as a subdirectory (we'll need to add the Luau source files)
-add_subdirectory(vendor/luau)
+# Copy the scripts folder to the output directory
+file(COPY ${PROJECT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_BINARY_DIR}/Debug)
 
-# Link against Luau
-target_link_libraries(${PROJECT_NAME} PRIVATE Luau.Ast Luau.VM Luau.Compiler)
+# Add header directories
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/external/luau/Common/include
+    ${PROJECT_SOURCE_DIR}/external/luau/VM/include
+    ${PROJECT_SOURCE_DIR}/external/luau/Compiler/include
+    ${PROJECT_SOURCE_DIR}/external/luau/Ast/include
+)
+
+# Add Luau subdirectory
+add_subdirectory(external/luau)
+
+# Link against Luau libraries
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    Luau.Ast
+    Luau.Compiler
+    Luau.VM
+    Luau.Common
+)
 
 # OpenGL
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE opengl32)
 elseif(UNIX)
     target_link_libraries(${PROJECT_NAME} PRIVATE GL)
+endif()
+
+# Windows-specific settings
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE WIN32_LEAN_AND_MEAN)
 endif() 

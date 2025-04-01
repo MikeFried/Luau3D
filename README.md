@@ -7,7 +7,7 @@ A simple cross-platform game engine prototype using C++, Luau VM, and OpenGL.
 - C++ core engine
 - Luau scripting support
 - OpenGL rendering
-- Cross-platform support (currently Windows, more platforms coming soon)
+- Cross-platform support (currently Windows, more platforms coming later)
 - No external dependencies required
 
 ## Building
@@ -22,7 +22,7 @@ A simple cross-platform game engine prototype using C++, Luau VM, and OpenGL.
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Luau3D.git
+git clone https://github.com/MikeFried/Luau3D.git
 cd Luau3D
 ```
 
@@ -44,12 +44,9 @@ cmake --build .
   - `engine/` - Core engine components
   - `main.cpp` - Entry point
 - `scripts/` - Luau game scripts
-- `vendor/` - Third-party dependencies
+- `external/` - Third-party dependencies
 
 ## Usage
 
-The engine uses Luau scripts for game logic. The main script is located at `scripts/main.luau`. You can modify this script to create your game.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
+The engine uses Luau scripts for game logic. The current script is hardcoded at `scripts/test.lua` and scrips must be copied into the running folder for now.
+In the future, the ability to load scripts from folders will be added to the program.

@@ -1,7 +1,10 @@
 #include "engine/Engine.h"
 #include <iostream>
+#include <filesystem>
 
 int main(int argc, char* argv[]) {
+    std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
+    
     Engine engine;
 
     // Initialize the engine with a window
@@ -10,9 +13,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Load and execute the main game script
-    if (!engine.loadScript("scripts/main.luau")) {
-        std::cerr << "Failed to load main script" << std::endl;
+    // Load and execute the test script
+    if (!engine.loadScript("scripts/test.lua")) {
+        std::cerr << "Failed to load test script" << std::endl;
         return 1;
     }
 

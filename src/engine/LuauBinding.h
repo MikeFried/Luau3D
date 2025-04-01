@@ -2,9 +2,8 @@
 
 #include <string>
 #include <memory>
-#include "Luau/Common.h"
-#include "Luau/Vm.h"
-#include "Luau/Compiler.h"
+#include "lua.h"
+#include "lualib.h"
 
 class GLRenderer;
 
@@ -27,8 +26,5 @@ public:
 
 private:
     GLRenderer* renderer;
-    std::unique_ptr<Luau::Allocator> allocator;
-    std::unique_ptr<Luau::AstNameTable> names;
-    std::unique_ptr<Luau::BytecodeBuilder> bytecode;
-    std::unique_ptr<Luau::VM> vm;
+    lua_State* L;
 }; 
