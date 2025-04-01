@@ -5,6 +5,19 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Initialize and update Luau submodule if not present
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/luau/CMakeLists.txt")
+    message(STATUS "Initializing Luau submodule...")
+    execute_process(
+        COMMAND git submodule update --init --recursive external/luau
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        RESULT_VARIABLE GIT_RESULT
+    )
+    if(NOT GIT_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed to initialize Luau submodule")
+    endif()
+endif()
+
 # Add source files
 set(SOURCES
     src/main.cpp
