@@ -2,6 +2,14 @@
 
 print("Script started")
 
+-- Load required modules
+local geometry = require("geometry.luau")
+print("Geometry module loaded")
+
+-- Create a cube
+local cube = geometry.createCube()
+--print("Cube created with", #cube, "vertices")
+
 -- Initial setup
 local time = 0
 local colors = {
@@ -28,6 +36,9 @@ while isRunning() do
         print("Setting color:", color[1], color[2], color[3], color[4])
         setClearColor(color[1], color[2], color[3], color[4])
     end
+    
+    -- Draw the cube
+    drawGeometry(cube)
     
     -- Present the frame
     present()

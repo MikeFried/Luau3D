@@ -24,7 +24,11 @@ public:
     // Register C++ functions to be called from Luau
     void registerBindings();
 
+    // Load a module (internal or external)
+    bool loadModule(const std::string& modulePath);
+
 private:
     GLRenderer* renderer;
     lua_State* L;
+    std::string currentScriptPath;
 }; 
