@@ -177,8 +177,7 @@ void LuauBinding::makeTableForInternalModule(lua_State* L, const LuauExport expo
     lua_createtable(L, 0, sizeof(exports) / sizeof(exports[0]));
     for (int i = 0; exports[i].name != nullptr; i++)
     {
-        lua_CFunction func = static_cast<lua_CFunction>(exports[i].func);
-        lua_pushcfunction(L, func, exports[i].name);
+        lua_pushcfunction(L, exports[i].func, exports[i].name);
         lua_setfield(L, -2, exports[i].name);
     }
     lua_setreadonly(L, -1, 1);
