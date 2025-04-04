@@ -4,8 +4,9 @@
 #define NOMINMAX
 #include <windows.h>
 #include <GL/gl.h>
+#include "ILuauModule.h"
 
-class GLRenderer {
+class GLRenderer : public ILuauModule {
 public:
     GLRenderer();
     ~GLRenderer();
@@ -31,6 +32,10 @@ public:
 
     // Check if window is still open
     bool isWindowOpen() const;
+
+    // ILuauModule implementation
+    const char* getModuleName() const override { return "luau3d.luau"; }
+    const LuauExport* getExports() const override;
 
 private:
     int width;

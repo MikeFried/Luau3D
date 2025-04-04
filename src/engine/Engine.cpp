@@ -17,17 +17,26 @@ bool Engine::initialize(const std::string& windowTitle, int width, int height) {
         }
 
         // Initialize Luau binding
-        luauBinding = std::make_unique<LuauBinding>(renderer.get());
+        luauBinding = std::make_unique<LuauBinding>();
         if (!luauBinding->initialize()) {
             std::cerr << "Failed to initialize Luau binding" << std::endl;
             return false;
         }
+
+        // Register modules
+        registerModule(renderer.get());
 
         isRunning = true;
         return true;
     } catch (const std::exception& e) {
         std::cerr << "Failed to initialize engine: " << e.what() << std::endl;
         return false;
+    }
+}
+
+void Engine::registerModule(const ILuauModule* module) {
+    if (luauBinding && module) {
+        luauBinding->registerInternalModule(module->getModuleName(), module->getExports());
     }
 }
 

@@ -4,6 +4,7 @@
 #include <memory>
 #include "GLRenderer.h"
 #include "LuauBinding.h"
+#include "ILuauModule.h"
 
 class Engine {
 public:
@@ -24,6 +25,9 @@ public:
 
     // Get the Luau binding
     LuauBinding* getLuauBinding() { return luauBinding.get(); }
+
+    // Register a module with the Luau binding
+    void registerModule(const ILuauModule* module);
 
 private:
     std::unique_ptr<GLRenderer> renderer;

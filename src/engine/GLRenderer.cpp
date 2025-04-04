@@ -1,5 +1,74 @@
 #include "GLRenderer.h"
+#include "LuauBinding.h"
+#include "lua.h"
+#include "lualib.h"
 #include <iostream>
+#include <vector>
+
+// Global renderer pointer for Lua functions
+static GLRenderer* g_renderer = nullptr;
+
+// Implementation of the Luau3d functions
+static int setClearColor(lua_State* L) {
+    if (!g_renderer) return 0;
+    
+    float r = static_cast<float>(lua_tonumber(L, 1));
+    float g = static_cast<float>(lua_tonumber(L, 2));
+    float b = static_cast<float>(lua_tonumber(L, 3));
+    float a = static_cast<float>(lua_tonumber(L, 4));
+    
+    g_renderer->setClearColor(r, g, b, a);
+    return 0;
+}
+
+static int getDeltaTime(lua_State* L) {
+    // For now, return a fixed delta time
+    lua_pushnumber(L, 1.0 / 60.0);
+    return 1;
+}
+
+static int isRunning(lua_State* L) {
+    if (!g_renderer) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    lua_pushboolean(L, g_renderer->isWindowOpen());
+    return 1;
+}
+
+static int present(lua_State* L) {
+    if (!g_renderer) return 0;
+    
+    g_renderer->beginFrame();
+    g_renderer->clear();
+    g_renderer->endFrame();
+    return 0;
+}
+
+static int drawGeometry(lua_State* L) {
+    if (!g_renderer) return 0;
+    
+    // Get the vertex data from the Lua table
+    luaL_checktype(L, 1, LUA_TTABLE);
+    int len = lua_objlen(L, 1);
+    
+    // Create a vector to store the vertex data
+    std::vector<float> vertices;
+    vertices.reserve(len);
+    
+    // Read the vertex data from the Lua table
+    for (int i = 1; i <= len; i++) {
+        lua_rawgeti(L, 1, i);
+        vertices.push_back(static_cast<float>(lua_tonumber(L, -1)));
+        lua_pop(L, 1);
+    }
+    
+    // TODO: Implement actual OpenGL rendering in GLRenderer
+    // For now, just print that we got the data
+    //std::cout << "Drawing geometry with " << vertices.size() << " vertices" << std::endl;
+    
+    return 0;
+}
 
 // Window procedure callback
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -16,9 +85,13 @@ GLRenderer::GLRenderer() : width(0), height(0), hwnd(nullptr), hdc(nullptr), hrc
     clearColor[1] = 0.0f;
     clearColor[2] = 0.0f;
     clearColor[3] = 1.0f;
+    g_renderer = this;
 }
 
 GLRenderer::~GLRenderer() {
+    if (g_renderer == this) {
+        g_renderer = nullptr;
+    }
     if (hrc) {
         wglMakeCurrent(nullptr, nullptr);
         wglDeleteContext(hrc);
@@ -139,3 +212,16 @@ void GLRenderer::setClearColor(float r, float g, float b, float a) {
 bool GLRenderer::isWindowOpen() const {
     return windowOpen;
 } 
+
+static LuauExport Luau3dExports[] = {
+    {"setClearColor", setClearColor},
+    {"getDeltaTime", getDeltaTime},
+    {"isRunning", isRunning},
+    {"present", present},
+    {"drawGeometry", drawGeometry},
+    {nullptr, nullptr}
+};
+
+const LuauExport* GLRenderer::getExports() const {
+    return Luau3dExports;
+}

@@ -2,14 +2,14 @@
 
 #include <string>
 #include <memory>
+#include <unordered_map>
 #include "lua.h"
 #include "lualib.h"
-
-class GLRenderer;
+#include "ILuauModule.h"
 
 class LuauBinding {
 public:
-    LuauBinding(GLRenderer* renderer);
+    LuauBinding();
     ~LuauBinding();
 
     // Initialize the Luau VM
@@ -24,11 +24,20 @@ public:
     // Register C++ functions to be called from Luau
     void registerBindings();
 
+    // Handle module loading and caching
+    bool loadAndCacheModule(lua_State *L, const std::string& modulePath);
+
     // Load a module (internal or external)
     bool loadModule(const std::string& modulePath);
 
+    // Register internal module exports
+    void registerInternalModule(const std::string& name, const LuauExport exports[]);
+
+    // Make a table for internal module exports
+    void makeTableForInternalModule(lua_State *L, const LuauExport exports[]);
+
 private:
-    GLRenderer* renderer;
     lua_State* L;
     std::string currentScriptPath;
+    std::unordered_map<std::string, int> moduleCache; // Cache of loaded modules by path
 }; 

@@ -10,18 +10,19 @@
 #include <vector>
 #include <filesystem>
 
-// Store the renderer pointer for use in Lua functions
-static GLRenderer* g_renderer = nullptr;
-
-LuauBinding::LuauBinding(GLRenderer* renderer) : renderer(renderer), L(nullptr) {
-    g_renderer = renderer;
+LuauBinding::LuauBinding() : L(nullptr) {
 }
 
 LuauBinding::~LuauBinding() {
     if (L) {
+        // Clean up cached modules
+        for (const auto& [path, ref] : moduleCache) {
+            lua_unref(L, ref);
+        }
+        moduleCache.clear();
+        
         lua_close(L);
     }
-    g_renderer = nullptr;
 }
 
 bool LuauBinding::initialize() {
@@ -90,84 +91,39 @@ bool LuauBinding::execute() {
     }
 }
 
-static int setClearColor(lua_State* L) {
-    if (!g_renderer) return 0;
-    
-    float r = static_cast<float>(lua_tonumber(L, 1));
-    float g = static_cast<float>(lua_tonumber(L, 2));
-    float b = static_cast<float>(lua_tonumber(L, 3));
-    float a = static_cast<float>(lua_tonumber(L, 4));
-    
-    g_renderer->setClearColor(r, g, b, a);
-    return 0;
-}
-
-static int getDeltaTime(lua_State* L) {
-    // For now, return a fixed delta time
-    lua_pushnumber(L, 1.0 / 60.0);
-    return 1;
-}
-
-static int isRunning(lua_State* L) {
-    if (!g_renderer) {
-        lua_pushboolean(L, false);
-        return 1;
-    }
-    lua_pushboolean(L, g_renderer->isWindowOpen());
-    return 1;
-}
-
-static int present(lua_State* L) {
-    if (!g_renderer) return 0;
-    
-    g_renderer->beginFrame();
-    g_renderer->clear();
-    g_renderer->endFrame();
-    return 0;
-}
-
-static int drawGeometry(lua_State* L) {
-    if (!g_renderer) return 0;
-    
-    // Get the vertex data from the Lua table
-    luaL_checktype(L, 1, LUA_TTABLE);
-    int len = lua_objlen(L, 1);
-    
-    // Create a vector to store the vertex data
-    std::vector<float> vertices;
-    vertices.reserve(len);
-    
-    // Read the vertex data from the Lua table
-    for (int i = 1; i <= len; i++) {
-        lua_rawgeti(L, 1, i);
-        vertices.push_back(static_cast<float>(lua_tonumber(L, -1)));
-        lua_pop(L, 1);
+bool LuauBinding::loadAndCacheModule(lua_State *L, const std::string& modulePath) {
+    // Check if module is already in cache
+    auto it = moduleCache.find(modulePath);
+    if (it != moduleCache.end()) {
+        // Module is cached, push it onto the stack
+        lua_rawgeti(L, LUA_REGISTRYINDEX, it->second);
+        return true;
     }
     
-    // TODO: Implement actual OpenGL rendering in GLRenderer
-    // For now, just print that we got the data
-    //std::cout << "Drawing geometry with " << vertices.size() << " vertices" << std::endl;
-    
-    return 0;
-}
+    // Try to load the module
+    if (!loadModule(modulePath)) {
+        std::cerr << "Failed to load module: " << modulePath << std::endl;
+        return false;
+    }
 
-// TODO: Add internal modules for OpenGL, file system, DLLImport
-// Check if the module is an internal module
+    // Cache the module
+    int ref = lua_ref(L, -1);
+    moduleCache[modulePath] = ref;
+    return true;
+}
 
 static int require(lua_State* L) {
     std::string modulePath = luaL_checkstring(L, 1);
     std::cout << "require called with path: " << modulePath << std::endl;
     
-    // Try to load the module using the LuauBinding instance
+    // Get the LuauBinding instance
     LuauBinding* binding = static_cast<LuauBinding*>(lua_touserdata(L, lua_upvalueindex(1)));
     if (!binding) {
-        std::cerr << "Internal error: LuauBinding not found" << std::endl;
         luaL_error(L, "Internal error: LuauBinding not found");
         return 0;
     }
 
-    if (!binding->loadModule(modulePath)) {
-        std::cerr << "Failed to load module: " << modulePath << std::endl;
+    if (!binding->loadAndCacheModule(L, modulePath)) {
         luaL_error(L, "Failed to load module: %s", modulePath.c_str());
         return 0;
     }
@@ -216,26 +172,26 @@ bool LuauBinding::loadModule(const std::string& modulePath) {
     }
 }
 
+void LuauBinding::makeTableForInternalModule(lua_State* L, const LuauExport exports[])
+{
+    lua_createtable(L, 0, sizeof(exports) / sizeof(exports[0]));
+    for (int i = 0; exports[i].name != nullptr; i++)
+    {
+        lua_CFunction func = static_cast<lua_CFunction>(exports[i].func);
+        lua_pushcfunction(L, func, exports[i].name);
+        lua_setfield(L, -2, exports[i].name);
+    }
+    lua_setreadonly(L, -1, 1);
+}
+
 void LuauBinding::registerBindings() {
-    // TODO: Move these into an engine module - don't leave them free floating in the global scope
-    // Register engine functions that can be called from Luau
-    lua_pushcfunction(L, setClearColor, "setClearColor");
-    lua_setglobal(L, "setClearColor");
-
-    lua_pushcfunction(L, getDeltaTime, "getDeltaTime");
-    lua_setglobal(L, "getDeltaTime");
-
-    lua_pushcfunction(L, isRunning, "isRunning");
-    lua_setglobal(L, "isRunning");
-
-    lua_pushcfunction(L, present, "present");
-    lua_setglobal(L, "present");
-
-    lua_pushcfunction(L, drawGeometry, "drawGeometry");
-    lua_setglobal(L, "drawGeometry");
-
-    // Register loadModule function instead of require
     lua_pushlightuserdata(L, this);
     lua_pushcclosure(L, require, "require", 1);
     lua_setglobal(L, "require");
+}
+
+void LuauBinding::registerInternalModule(const std::string& name, const LuauExport exports[]) {
+    makeTableForInternalModule(L, exports);
+    int ref = lua_ref(L, -1);
+    moduleCache[name] = ref;
 } 
