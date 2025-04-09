@@ -5,6 +5,7 @@
 #include "GLRenderer.h"
 #include "LuauBinding.h"
 #include "ILuauModule.h"
+#include "Luau3D.h"
 
 class Engine {
 public:
@@ -32,5 +33,6 @@ public:
 private:
     std::unique_ptr<GLRenderer> renderer;
     std::unique_ptr<LuauBinding> luauBinding;
+    std::unique_ptr<Luau3D> luau3d;
     bool isRunning;
 }; 

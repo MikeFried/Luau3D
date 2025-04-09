@@ -14,35 +14,35 @@ export type Geometry = {
 
 function geometry.createCube()
     local vertices = {
-        {x = -1, y = -1, z = -1},
-        {x = 1, y = -1, z = -1},
-        {x = 1, y = 1, z = -1},
-        {x = -1, y = 1, z = -1},
-        {x = -1, y = -1, z = 1},
-        {x = 1, y = -1, z = 1},
-        {x = 1, y = 1, z = 1},
-        {x = -1, y = 1, z = 1},
+        {x = -0.5, y = -0.5, z = -0.5},
+        {x = -0.5, y =  0.5, z = -0.5},
+        {x =  0.5, y =  0.5, z = -0.5},
+        {x =  0.5, y = -0.5, z = -0.5},
+        {x =  0.5, y = -0.5, z =  0.5},
+        {x =  0.5, y =  0.5, z =  0.5},
+        {x = -0.5, y =  0.5, z =  0.5},
+        {x = -0.5, y = -0.5, z =  0.5},
     }
     -- Make triangles - 12 triangles for the 6 faces of the cube
     local triangles = {
         -- Front face
         {1, 2, 3},
-        {1, 3, 4},
+        {3, 4, 1},
         -- Back face
         {5, 6, 7},
-        {5, 7, 8},
+        {7, 8, 5},
         -- Top face
-        {1, 2, 6},
-        {1, 6, 5},
-        -- Bottom face
-        {3, 4, 8},
-        {3, 8, 7},
-        -- Right face
-        {2, 3, 7},
         {2, 7, 6},
-        -- Left face
-        {4, 1, 5},
+        {6, 3, 4},
+        -- Bottom face
+        {8, 1, 4},
         {4, 5, 8},
+        -- Right face
+        {4, 3, 6},
+        {6, 5, 4},
+        -- Left face
+        {8, 7, 2},
+        {2, 1, 8},
     }
     return geometry.createGeometry(vertices, triangles)
 end

@@ -23,8 +23,11 @@ bool Engine::initialize(const std::string& windowTitle, int width, int height) {
             return false;
         }
 
+        // Initialize Luau3D
+        luau3d = std::make_unique<Luau3D>(renderer.get());
+
         // Register modules
-        registerModule(renderer.get());
+        registerModule(luau3d.get());
 
         isRunning = true;
         return true;

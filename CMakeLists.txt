@@ -23,6 +23,8 @@ set(SOURCES
     src/main.cpp
     src/engine/Engine.cpp
     src/engine/Engine.h
+    src/engine/Luau3D.cpp
+    src/engine/Luau3D.h
     src/engine/LuauBinding.cpp
     src/engine/LuauBinding.h
     src/engine/GLRenderer.cpp
