@@ -1,8 +1,22 @@
 #include "engine/Engine.h"
+#include "engine/Config.h"
 #include <iostream>
 #include <filesystem>
 
 int main(int argc, char* argv[]) {
+    Config config;
+    
+    // Parse command line arguments
+    if (!config.parseArguments(argc, argv)) {
+        return 1;
+    }
+
+    // Show help and exit if requested
+    if (config.shouldShowHelp()) {
+        config.printHelp();
+        return 0;
+    }
+
     std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
     
     Engine engine;
@@ -13,9 +27,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Load and execute the test script
-    if (!engine.loadScript("scripts/test.lua")) {
-        std::cerr << "Failed to load test script" << std::endl;
+    // Load and execute the script
+    if (!engine.loadScript(config.getScriptPath())) {
+        std::cerr << "Failed to load script: " << config.getScriptPath() << std::endl;
         return 1;
     }
 

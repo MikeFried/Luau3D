@@ -29,13 +29,15 @@ set(SOURCES
     src/engine/LuauBinding.h
     src/engine/GLRenderer.cpp
     src/engine/GLRenderer.h
+    src/engine/Config.cpp
+    src/engine/Config.h
 )
 
 # Create executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 # Copy the scripts folder to the output directory
-file(COPY ${PROJECT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_BINARY_DIR}/Debug)
+file(COPY ${PROJECT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 
 # Add header directories
 target_include_directories(${PROJECT_NAME} PRIVATE
