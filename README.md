@@ -48,5 +48,7 @@ cmake --build .
 
 ## Usage
 
-The engine uses Luau scripts for game logic. The current script is hardcoded at `scripts/test.lua` and scrips must be copied into the running folder for now.
-In the future, the ability to load scripts from folders will be added to the program.
+The engine uses Luau scripts for game logic. The current script is located at `scripts/test.lua` and copied into the running folder for now.
+Command line arguments include --run filename to specify the game starting script.
+If no command line arguments are passed, the executable tries to run `main.luau` in the current working folder.
+
