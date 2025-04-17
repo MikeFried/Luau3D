@@ -4,6 +4,7 @@
 #define NOMINMAX
 #include <windows.h>
 #include <GL/gl.h>
+#include <vector>
 
 class GLRenderer {
 public:
@@ -32,6 +33,18 @@ public:
     // Check if window is still open
     bool isWindowOpen() const;
 
+    bool hasGeometryToDraw;
+    std::vector<float> geometryVertices;  // Store vertices for rendering
+
+    void setGeometryData(const std::vector<float>& vertices) {
+        geometryVertices = vertices;
+        hasGeometryToDraw = true;
+    }
+
+    // Add these new methods
+    void setGeometryColor(float r, float g, float b);
+    void enableLighting(bool enable);
+
 private:
     int width;
     int height;
@@ -40,4 +53,5 @@ private:
     HDC hdc;
     HGLRC hrc;
     bool windowOpen;
+    float geometryColor[3];
 }; 

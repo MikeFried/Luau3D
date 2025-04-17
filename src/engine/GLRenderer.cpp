@@ -103,6 +103,23 @@ bool GLRenderer::initialize(const std::string& windowTitle, int w, int h) {
         return false;
     }
 
+    // Enable only point smoothing
+    glEnable(GL_POINT_SMOOTH);
+    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+
+    // After OpenGL context is created and made current:
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, width, height);
+
+    // Set up projection matrix
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(-1, 1, -1, 1, 1, 100);
+
+    // Reset to modelview matrix
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
     ShowWindow(hwnd, SW_SHOW);
     return true;
 }
@@ -138,4 +155,18 @@ void GLRenderer::setClearColor(float r, float g, float b, float a) {
 
 bool GLRenderer::isWindowOpen() const {
     return windowOpen;
+}
+
+void GLRenderer::setGeometryColor(float r, float g, float b) {
+    geometryColor[0] = r;
+    geometryColor[1] = g;
+    geometryColor[2] = b;
+}
+
+void GLRenderer::enableLighting(bool enable) {
+    if (enable) {
+        glEnable(GL_LIGHTING);
+    } else {
+        glDisable(GL_LIGHTING);
+    }
 }

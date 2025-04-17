@@ -18,6 +18,7 @@ public:
     static int isRunning(lua_State* L);
     static int present(lua_State* L);
     static int drawGeometry(lua_State* L);
+    static int setLight(lua_State* L);
 
     // Helper to get the Luau3D instance from Lua state
     static Luau3D* getInstance(lua_State* L);
