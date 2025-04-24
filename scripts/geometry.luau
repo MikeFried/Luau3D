@@ -16,7 +16,7 @@ export type Geometry = {
 }
 
 function geometry.createCube()
-    local distanceFromOrigin = 0.1  
+    local distanceFromOrigin = 0.28  
     local vertices = {
         -- Front face
         {x = -distanceFromOrigin, y = -distanceFromOrigin, z = -distanceFromOrigin, r = 1.0, g = 0.0, b = 0.0}, -- red

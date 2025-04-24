@@ -10,6 +10,57 @@ A simple cross-platform game engine prototype using C++, Luau VM, and OpenGL.
 - Cross-platform support (currently Windows, more platforms coming later)
 - No external dependencies required
 
+### Working features
+- Launch with parameters, load a Luau file
+- Require relative to the Luau file
+- Overrides for Require to load binary module
+- 3D binary module
+
+### Technical debt / planned changes
+- C++ binding mechanism needs a way to dynamically load DLL as runtime
+- Will likely rework ILuauModule
+- Message pump within present should be moved elsewhere
+- More control over GUI window needs to be given to Luau
+
+### Bugs
+- Window event processing pauses frames when dragging
+
+### Future planned features - in no particular order
+
+#### Game functionality
+- Document Model / Tree and JSON serialization
+- Scene graph adapter / view on Document Model
+- Filesystem operations
+- Network support for running as server and client and DM replication
+- Network support for ICE+ / STUN / TURN and P2P
+#### 3D Rendering
+- Camera
+- Loading / Saving Meshes and Textures
+- NURBS / Parametric Meshes
+- Pixel / Texture / Geometry Shader support
+#### Inputs
+- Keyboard
+- Mouse
+- Stream Deck
+- Game pads
+#### Audio Support
+- Audio Source Selection
+- Audio Inputs and Outputs
+- MIDI Source Selection
+- MIDI Inputs and Outputs
+#### Streaming Support
+- Video Device Selection
+- Video Input / Outputs
+#### Filters
+- GPU Kernel filters for Audio / Video
+#### Debugging
+- Integrate DAP from Open Source project and make template for VS Code starter project including DAP
+#### Porting
+- Linux
+- Mac OS
+- iPad
+- Android
+
 ## Building
 
 ### Prerequisites
@@ -40,11 +91,11 @@ cmake --build .
 
 ## Project Structure
 
-- `src/` - Source files
-  - `engine/` - Core engine components
-  - `main.cpp` - Entry point
-- `scripts/` - Luau game scripts
-- `external/` - Third-party dependencies
+- `src/`- Source files
+ - `engine/`- Core engine components
+ - `main.cpp`- Entry point
+- `scripts/`- Luau game scripts
+- `external/`- Third-party dependencies
 
 ## Usage
 
