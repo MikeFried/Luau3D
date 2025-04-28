@@ -7,9 +7,14 @@ local model = require("model.luau")
 local luau3d = require("luau3d.luau")
 print("Model module loaded")
 
--- Create a cube
-local cube = model.createCube()
-print("Cube created with", #cube, "vertices")
+-- Create a cube with initial CFrame
+local cube = model.createCube(0.5, {
+    position = {0, 0, -3},  -- Move cube back for better viewing
+    look = {0, 0, -1},
+    up = {0, 1, 0},
+    right = {1, 0, 0}
+})
+print("Cube created")
 
 -- Initial setup
 local time = 0 -- seconds of simulation time total
@@ -62,6 +67,22 @@ while luau3d.isRunning() do
         color = colors[currentColor]
         luau3d.setClearColor(table.unpack(color))
     end
+    
+    -- Update cube's CFrame to make it rotate
+    local angle = time * math.pi * 0.5  -- Rotate 90 degrees per second
+    local cosAngle = math.cos(angle)
+    local sinAngle = math.sin(angle)
+    
+    luau3d.updateModel(cubeIndex, {
+        vertices = cube.vertices,
+        visible = true,
+        cframe = {
+            position = {0, 0, -3},  -- Keep the same position
+            look = {sinAngle, 0, -cosAngle},
+            up = {0, 1, 0},
+            right = {cosAngle, 0, sinAngle}
+        }
+    })
     
     -- Present the frame
     luau3d.present()

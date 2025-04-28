@@ -1,4 +1,4 @@
-local geometry = {}
+local model = {}
 
 export type Vertex = {
     x: number,
@@ -11,23 +11,29 @@ export type Vertex = {
 
 export type Triangle = {number}
 
-export type Geometry = {
-    createGeometry: (vertices: {Vertex}, triangles: {Triangle}) -> any,
+export type Model = {
+    createModel: (vertices: {Vertex}, triangles: {Triangle}) -> any,
 }
 
-function geometry.createCube()
-    local distanceFromOrigin = 0.28  
+export type CFrame = {
+    position: {number}, -- {x, y, z}
+    look: {number},    -- {x, y, z}
+    up: {number},      -- {x, y, z}
+    right: {number},   -- {x, y, z}
+}
+
+function model.createCube(radius: number, cframe: CFrame)
     local vertices = {
         -- Front face
-        {x = -distanceFromOrigin, y = -distanceFromOrigin, z = -distanceFromOrigin, r = 1.0, g = 0.0, b = 0.0}, -- red
-        {x = -distanceFromOrigin, y =  distanceFromOrigin, z = -distanceFromOrigin, r = 0.0, g = 1.0, b = 0.0}, -- green
-        {x =  distanceFromOrigin, y =  distanceFromOrigin, z = -distanceFromOrigin, r = 0.0, g = 0.0, b = 1.0}, -- blue
-        {x =  distanceFromOrigin, y = -distanceFromOrigin, z = -distanceFromOrigin, r = 1.0, g = 1.0, b = 0.0}, -- yellow
+        {x = -radius, y = -radius, z = -radius, r = 1.0, g = 0.0, b = 0.0}, -- red
+        {x = -radius, y =  radius, z = -radius, r = 0.0, g = 1.0, b = 0.0}, -- green
+        {x =  radius, y =  radius, z = -radius, r = 0.0, g = 0.0, b = 1.0}, -- blue
+        {x =  radius, y = -radius, z = -radius, r = 1.0, g = 1.0, b = 0.0}, -- yellow
         -- Back face
-        {x =  distanceFromOrigin, y = -distanceFromOrigin, z =  distanceFromOrigin, r = 1.0, g = 0.0, b = 1.0}, -- magenta
-        {x =  distanceFromOrigin, y =  distanceFromOrigin, z =  distanceFromOrigin, r = 0.0, g = 1.0, b = 1.0}, -- cyan
-        {x = -distanceFromOrigin, y =  distanceFromOrigin, z =  distanceFromOrigin, r = 1.0, g = 1.0, b = 1.0}, -- white
-        {x = -distanceFromOrigin, y = -distanceFromOrigin, z =  distanceFromOrigin, r = 0.5, g = 0.5, b = 0.5}, -- gray
+        {x =  radius, y = -radius, z =  radius, r = 1.0, g = 0.0, b = 1.0}, -- magenta
+        {x =  radius, y =  radius, z =  radius, r = 0.0, g = 1.0, b = 1.0}, -- cyan
+        {x = -radius, y =  radius, z =  radius, r = 1.0, g = 1.0, b = 1.0}, -- white
+        {x = -radius, y = -radius, z =  radius, r = 0.5, g = 0.5, b = 0.5}, -- gray
     }
     
     local triangles = {
@@ -50,10 +56,15 @@ function geometry.createCube()
         {8, 7, 2},
         {8, 2, 1},
     }
-    return geometry.createGeometry(vertices, triangles)
+    
+    return {
+        vertices = model.createGeometry(vertices, triangles),
+        visible = true,
+        cframe = cframe
+    }
 end
 
-function geometry.createGeometry(vertices: {Vertex}, triangles: {Triangle})
+function model.createGeometry(vertices: {Vertex}, triangles: {Triangle})
     -- Modify to include color data
     local triangleStrips = {}
     for _, triangle in pairs(triangles) do
@@ -85,4 +96,4 @@ function geometry.createGeometry(vertices: {Vertex}, triangles: {Triangle})
     return triangleStrips
 end
 
-return geometry 
+return model 

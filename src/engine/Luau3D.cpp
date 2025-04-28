@@ -61,60 +61,157 @@ int Luau3D::present(lua_State* L) {
     
     instance->renderer->beginFrame();
     instance->renderer->clear();
-    
-    if (instance->renderer->hasGeometryToDraw) {
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glTranslatef(0.0f, 0.0f, -1.5f);
-        
-        static float angle = 0.0f;
-        angle += 1.0f;
-        glRotatef(angle, 1.0f, 1.0f, 0.0f);
-        
-        // Enable vertex arrays for both position and color
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_COLOR_ARRAY);
-        
-        const float* data = instance->renderer->geometryVertices.data();
-        // Stride is 6 floats (3 for position, 3 for color)
-        glVertexPointer(3, GL_FLOAT, 6 * sizeof(float), data);
-        // Color data starts 3 floats after each vertex
-        glColorPointer(3, GL_FLOAT, 6 * sizeof(float), data + 3);
-        
-        glDrawArrays(GL_TRIANGLES, 0, instance->renderer->geometryVertices.size() / 6);
-        
-        glDisableClientState(GL_COLOR_ARRAY);
-        glDisableClientState(GL_VERTEX_ARRAY);
-        
-        instance->renderer->hasGeometryToDraw = false;
-    }
-    
+    instance->renderer->render(instance->models);
     instance->renderer->endFrame();
     return 0;
 }
 
-int Luau3D::drawGeometry(lua_State* L) {
+int Luau3D::addModel(lua_State* L) {
     Luau3D* instance = getInstance(L);
     if (!instance) return 0;
     
-    // Get the vertex data from the Lua table
+    // Get the model properties table
     luaL_checktype(L, 1, LUA_TTABLE);
-    int len = lua_objlen(L, 1);
     
-    // Create a vector to store the vertex data
+    // Get vertices
+    lua_getfield(L, 1, "vertices");
+    luaL_checktype(L, -1, LUA_TTABLE);
+    int len = lua_objlen(L, -1);
+    
     std::vector<float> vertices;
     vertices.reserve(len);
     
-    // Read the vertex data from the Lua table
     for (int i = 1; i <= len; i++) {
-        lua_rawgeti(L, 1, i);
+        lua_rawgeti(L, -1, i);
         vertices.push_back(static_cast<float>(lua_tonumber(L, -1)));
         lua_pop(L, 1);
     }
+    lua_pop(L, 1); // Pop vertices table
     
-    // Store the geometry data for rendering during present
-    instance->renderer->setGeometryData(vertices);
+    // Get visibility (optional)
+    bool visible = true;
+    lua_getfield(L, 1, "visible");
+    if (lua_isboolean(L, -1)) {
+        visible = lua_toboolean(L, -1) != 0;
+    }
+    lua_pop(L, 1);
     
+    // Get CFrame (optional)
+    CFrame cframe;
+    lua_getfield(L, 1, "cframe");
+    if (lua_istable(L, -1)) {
+        // Helper function to get vector from table field
+        auto getVector = [L](const char* field, float* vec) {
+            lua_getfield(L, -1, field);
+            if (lua_istable(L, -1)) {
+                for (int i = 0; i < 3; i++) {
+                    lua_rawgeti(L, -1, i + 1);
+                    vec[i] = static_cast<float>(lua_tonumber(L, -1));
+                    lua_pop(L, 1);
+                }
+            }
+            lua_pop(L, 1);
+        };
+        
+        getVector("position", cframe.position);
+        getVector("look", cframe.look);
+        getVector("up", cframe.up);
+        getVector("right", cframe.right);
+    }
+    lua_pop(L, 1);
+    
+    // Add the model and return its index
+    size_t index = instance->addModel(vertices, visible, cframe);
+    lua_pushinteger(L, static_cast<lua_Integer>(index));
+    return 1;
+}
+
+int Luau3D::removeModel(lua_State* L) {
+    Luau3D* instance = getInstance(L);
+    if (!instance) return 0;
+    
+    size_t index = static_cast<size_t>(luaL_checkinteger(L, 1));
+    instance->removeModel(index);
+    return 0;
+}
+
+int Luau3D::clearModels(lua_State* L) {
+    Luau3D* instance = getInstance(L);
+    if (!instance) return 0;
+    
+    instance->clearModels();
+    return 0;
+}
+
+int Luau3D::setModelVisible(lua_State* L) {
+    Luau3D* instance = getInstance(L);
+    if (!instance) return 0;
+    
+    size_t index = static_cast<size_t>(luaL_checkinteger(L, 1));
+    bool visible = lua_toboolean(L, 2) != 0;
+    instance->setModelVisible(index, visible);
+    return 0;
+}
+
+int Luau3D::updateModel(lua_State* L) {
+    Luau3D* instance = getInstance(L);
+    if (!instance) return 0;
+    
+    // Get model index
+    size_t index = static_cast<size_t>(luaL_checkinteger(L, 1));
+    
+    // Get the model properties table
+    luaL_checktype(L, 2, LUA_TTABLE);
+    
+    // Get vertices
+    lua_getfield(L, 2, "vertices");
+    luaL_checktype(L, -1, LUA_TTABLE);
+    int len = lua_objlen(L, -1);
+    
+    std::vector<float> vertices;
+    vertices.reserve(len);
+    
+    for (int i = 1; i <= len; i++) {
+        lua_rawgeti(L, -1, i);
+        vertices.push_back(static_cast<float>(lua_tonumber(L, -1)));
+        lua_pop(L, 1);
+    }
+    lua_pop(L, 1); // Pop vertices table
+    
+    // Get visibility (optional)
+    bool visible = true;
+    lua_getfield(L, 2, "visible");
+    if (lua_isboolean(L, -1)) {
+        visible = lua_toboolean(L, -1) != 0;
+    }
+    lua_pop(L, 1);
+    
+    // Get CFrame (optional)
+    CFrame cframe;
+    lua_getfield(L, 2, "cframe");
+    if (lua_istable(L, -1)) {
+        // Helper function to get vector from table field
+        auto getVector = [L](const char* field, float* vec) {
+            lua_getfield(L, -1, field);
+            if (lua_istable(L, -1)) {
+                for (int i = 0; i < 3; i++) {
+                    lua_rawgeti(L, -1, i + 1);
+                    vec[i] = static_cast<float>(lua_tonumber(L, -1));
+                    lua_pop(L, 1);
+                }
+            }
+            lua_pop(L, 1);
+        };
+        
+        getVector("position", cframe.position);
+        getVector("look", cframe.look);
+        getVector("up", cframe.up);
+        getVector("right", cframe.right);
+    }
+    lua_pop(L, 1);
+    
+    // Update the model
+    instance->updateModel(index, vertices, visible, cframe);
     return 0;
 }
 
@@ -122,38 +219,33 @@ int Luau3D::setLight(lua_State* L) {
     Luau3D* instance = getInstance(L);
     if (!instance) return 0;
     
-    // Get light number (1-8) and convert to GL_LIGHT0-GL_LIGHT7
+    // Get light number (1-8)
     int lightNum = luaL_checkinteger(L, 1) - 1;
     if (lightNum < 0 || lightNum > 7) {
         luaL_error(L, "Light number must be between 1 and 8");
         return 0;
     }
-    GLenum light = GL_LIGHT0 + lightNum;
     
     // Check properties table
     luaL_checktype(L, 2, LUA_TTABLE);
     
+    LightProperties properties;
+    
     // Helper function to get float array from table field
-    auto getFloatArray = [L](const char* field, float* out, int minSize, int maxSize) -> int {
+    auto getFloatArray = [L](const char* field) -> std::vector<float> {
+        std::vector<float> result;
         lua_getfield(L, 2, field);
         if (lua_istable(L, -1)) {
             int size = lua_objlen(L, -1);
-            if (size >= minSize && size <= maxSize) {
-                for (int i = 0; i < size; i++) {
-                    lua_rawgeti(L, -1, i + 1);
-                    out[i] = static_cast<float>(lua_tonumber(L, -1));
-                    lua_pop(L, 1);
-                }
-                // Fill remaining with defaults
-                for (int i = size; i < maxSize; i++) {
-                    out[i] = (i == 3) ? 1.0f : 0.0f; // w = 1.0 for position/colors
-                }
+            result.reserve(size);
+            for (int i = 0; i < size; i++) {
+                lua_rawgeti(L, -1, i + 1);
+                result.push_back(static_cast<float>(lua_tonumber(L, -1)));
                 lua_pop(L, 1);
-                return size;
             }
         }
         lua_pop(L, 1);
-        return 0;
+        return result;
     };
     
     // Helper function to get single float from table field
@@ -164,67 +256,57 @@ int Luau3D::setLight(lua_State* L) {
         return result;
     };
     
-    // Process each possible light property
-    float values[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+    // Get light properties
+    properties.position = getFloatArray("position");
+    properties.ambient = getFloatArray("ambient");
+    properties.diffuse = getFloatArray("diffuse");
+    properties.specular = getFloatArray("specular");
+    properties.spotDirection = getFloatArray("spotDirection");
+    properties.spotExponent = getFloat("spotExponent", -1.0f);
+    properties.spotCutoff = getFloat("spotCutoff", -1.0f);
+    properties.constantAttenuation = getFloat("constantAttenuation", -1.0f);
+    properties.linearAttenuation = getFloat("linearAttenuation", -1.0f);
+    properties.quadraticAttenuation = getFloat("quadraticAttenuation", -1.0f);
     
-    // Position (3 or 4 components)
-    if (getFloatArray("position", values, 3, 4)) {
-        glLightfv(light, GL_POSITION, values);
-    }
-    
-    // Ambient color (3 or 4 components)
-    if (getFloatArray("ambient", values, 3, 4)) {
-        glLightfv(light, GL_AMBIENT, values);
-    }
-    
-    // Diffuse color (3 or 4 components)
-    if (getFloatArray("diffuse", values, 3, 4)) {
-        glLightfv(light, GL_DIFFUSE, values);
-    }
-    
-    // Specular color (3 or 4 components)
-    if (getFloatArray("specular", values, 3, 4)) {
-        glLightfv(light, GL_SPECULAR, values);
-    }
-    
-    // Spot direction (3 components)
-    if (getFloatArray("spotDirection", values, 3, 3)) {
-        glLightfv(light, GL_SPOT_DIRECTION, values);
-    }
-    
-    // Spot exponent
-    float spotExponent = getFloat("spotExponent", -1.0f);
-    if (spotExponent >= 0.0f) {
-        glLightf(light, GL_SPOT_EXPONENT, spotExponent);
-    }
-    
-    // Spot cutoff
-    float spotCutoff = getFloat("spotCutoff", -1.0f);
-    if (spotCutoff >= 0.0f) {
-        glLightf(light, GL_SPOT_CUTOFF, spotCutoff);
-    }
-    
-    // Attenuation factors
-    float constAtten = getFloat("constantAttenuation", -1.0f);
-    if (constAtten >= 0.0f) {
-        glLightf(light, GL_CONSTANT_ATTENUATION, constAtten);
-    }
-    
-    float linearAtten = getFloat("linearAttenuation", -1.0f);
-    if (linearAtten >= 0.0f) {
-        glLightf(light, GL_LINEAR_ATTENUATION, linearAtten);
-    }
-    
-    float quadAtten = getFloat("quadraticAttenuation", -1.0f);
-    if (quadAtten >= 0.0f) {
-        glLightf(light, GL_QUADRATIC_ATTENUATION, quadAtten);
-    }
-    
-    // Enable the light
-    glEnable(light);
+    // Set the light properties
+    instance->renderer->setLight(lightNum, properties);
     
     lua_pushboolean(L, 1);
     return 1;
+}
+
+// Model management implementation
+size_t Luau3D::addModel(const std::vector<float>& vertices, bool visible, const CFrame& cframe) {
+    Model model;
+    model.vertices = vertices;
+    model.visible = visible;
+    model.cframe = cframe;
+    models.push_back(model);
+    return models.size() - 1;
+}
+
+void Luau3D::removeModel(size_t index) {
+    if (index < models.size()) {
+        models.erase(models.begin() + index);
+    }
+}
+
+void Luau3D::clearModels() {
+    models.clear();
+}
+
+void Luau3D::setModelVisible(size_t index, bool visible) {
+    if (index < models.size()) {
+        models[index].visible = visible;
+    }
+}
+
+void Luau3D::updateModel(size_t index, const std::vector<float>& vertices, bool visible, const CFrame& cframe) {
+    if (index < models.size()) {
+        models[index].vertices = vertices;
+        models[index].visible = visible;
+        models[index].cframe = cframe;
+    }
 }
 
 static LuauExport Luau3dExports[] = {
@@ -232,7 +314,11 @@ static LuauExport Luau3dExports[] = {
     {"getDeltaTime", Luau3D::getDeltaTime},
     {"isRunning", Luau3D::isRunning},
     {"present", Luau3D::present},
-    {"drawGeometry", Luau3D::drawGeometry},
+    {"addModel", Luau3D::addModel},
+    {"removeModel", Luau3D::removeModel},
+    {"clearModels", Luau3D::clearModels},
+    {"setModelVisible", Luau3D::setModelVisible},
+    {"updateModel", Luau3D::updateModel},
     {"setLight", Luau3D::setLight},
     {nullptr, nullptr}
 };

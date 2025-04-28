@@ -173,11 +173,25 @@ void GLRenderer::render(const std::vector<Model>& models) {
     // Set up the modelview matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, -1.5f);
     
     // Render all visible models
     for (const auto& model : models) {
         if (!model.visible) continue;
+        
+        // Apply CFrame transform
+        glPushMatrix();
+        
+        // Translate to position
+        glTranslatef(model.cframe.position[0], model.cframe.position[1], model.cframe.position[2]);
+        
+        // Create rotation matrix from look, up, and right vectors
+        float matrix[16] = {
+            model.cframe.right[0], model.cframe.up[0], -model.cframe.look[0], 0.0f,
+            model.cframe.right[1], model.cframe.up[1], -model.cframe.look[1], 0.0f,
+            model.cframe.right[2], model.cframe.up[2], -model.cframe.look[2], 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        };
+        glMultMatrixf(matrix);
         
         const float* data = model.vertices.data();
         // Stride is 6 floats (3 for position, 3 for color)
@@ -186,6 +200,8 @@ void GLRenderer::render(const std::vector<Model>& models) {
         glColorPointer(3, GL_FLOAT, 6 * sizeof(float), data + 3);
         
         glDrawArrays(GL_TRIANGLES, 0, model.vertices.size() / 6);
+        
+        glPopMatrix();
     }
     
     glDisableClientState(GL_COLOR_ARRAY);

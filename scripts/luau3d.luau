@@ -12,6 +12,19 @@ export type LightProperties = {
     quadraticAttenuation: number?, -- 0-1
 }
 
+export type CFrame = {
+    position: {number}, -- {x, y, z}
+    look: {number},    -- {x, y, z}
+    up: {number},      -- {x, y, z}
+    right: {number},   -- {x, y, z}
+}
+
+export type ModelProperties = {
+    vertices: {number},
+    visible: boolean?,
+    cframe: CFrame?,
+}
+
 export type Luau3D = {
     -- Returns true if the engine is running
     isRunning: () -> boolean,
@@ -19,8 +32,16 @@ export type Luau3D = {
     getDeltaTime: () -> number,
     -- Presents the current frame
     present: () -> boolean,
-    -- Draws the geometry
-    drawGeometry: (geometry: {}) -> boolean,
+    -- Adds a new model and returns its index
+    addModel: (properties: ModelProperties) -> number,
+    -- Removes a model by index
+    removeModel: (index: number) -> boolean,
+    -- Removes all models
+    clearModels: () -> boolean,
+    -- Sets the visibility of a model
+    setModelVisible: (index: number, visible: boolean) -> boolean,
+    -- Updates a model's properties
+    updateModel: (index: number, properties: ModelProperties) -> boolean,
     -- Sets the clear color for the next frame
     setClearColor: (r: number, g: number, b: number, a: number) -> boolean,
     -- Sets the light properties for the next frame
@@ -47,8 +68,32 @@ luau3d.present = function()
     return true
 end
 
--- Draws the geometry
-luau3d.drawGeometry = function(geometry)
+-- Adds a new model and returns its index
+luau3d.addModel = function(properties)
+    -- This is a placeholder for the actual implementation provided by the engine
+    return 0
+end
+
+-- Removes a model by index
+luau3d.removeModel = function(index)
+    -- This is a placeholder for the actual implementation provided by the engine
+    return true
+end
+
+-- Removes all models
+luau3d.clearModels = function()
+    -- This is a placeholder for the actual implementation provided by the engine
+    return true
+end
+
+-- Sets the visibility of a model
+luau3d.setModelVisible = function(index, visible)
+    -- This is a placeholder for the actual implementation provided by the engine
+    return true
+end
+
+-- Updates a model's properties
+luau3d.updateModel = function(index, properties)
     -- This is a placeholder for the actual implementation provided by the engine
     return true
 end
