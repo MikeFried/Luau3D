@@ -6,6 +6,28 @@
 #include <GL/gl.h>
 #include <vector>
 
+struct Model {
+    std::vector<float> vertices;  // Interleaved position (3) and color (3) data
+    bool visible;
+    // Future: Add model view information here
+    // - Transform matrix
+    // - Material properties
+    // - Shader information
+};
+
+struct LightProperties {
+    std::vector<float> position;  // 3 or 4 components
+    std::vector<float> ambient;   // 3 or 4 components
+    std::vector<float> diffuse;   // 3 or 4 components
+    std::vector<float> specular;  // 3 or 4 components
+    std::vector<float> spotDirection;  // 3 components
+    float spotExponent;
+    float spotCutoff;
+    float constantAttenuation;
+    float linearAttenuation;
+    float quadraticAttenuation;
+};
+
 class GLRenderer {
 public:
     GLRenderer();
@@ -33,17 +55,12 @@ public:
     // Check if window is still open
     bool isWindowOpen() const;
 
-    bool hasGeometryToDraw;
-    std::vector<float> geometryVertices;  // Store vertices for rendering
-
-    void setGeometryData(const std::vector<float>& vertices) {
-        geometryVertices = vertices;
-        hasGeometryToDraw = true;
-    }
-
-    // Add these new methods
-    void setGeometryColor(float r, float g, float b);
+    // Light management
+    void setLight(int lightNum, const LightProperties& properties);
     void enableLighting(bool enable);
+
+    // Render all visible models
+    void render(const std::vector<Model>& models);
 
 private:
     int width;
@@ -53,5 +70,4 @@ private:
     HDC hdc;
     HGLRC hrc;
     bool windowOpen;
-    float geometryColor[3];
 }; 

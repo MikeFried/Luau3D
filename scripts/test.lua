@@ -3,13 +3,13 @@
 print("Script started")
 
 -- Load required modules
-local geometry = require("geometry.luau")
+local model = require("model.luau")
 local luau3d = require("luau3d.luau")
-print("Geometry module loaded")
+print("Model module loaded")
 
 -- Create a cube
-local cube = geometry.createCube()
---print("Cube created with", #cube, "vertices")
+local cube = model.createCube()
+print("Cube created with", #cube, "vertices")
 
 -- Initial setup
 local time = 0 -- seconds of simulation time total
@@ -24,7 +24,7 @@ local colorChangeInterval = 1.0  -- Change color every second
 
 -- Set the initial color
 local color = colors[currentColor]
-luau3d.setClearColor( table.unpack(color) )
+luau3d.setClearColor(table.unpack(color))
 
 print("Entering main loop")
 
@@ -45,6 +45,10 @@ luau3d.setLight(2, {
     spotExponent = 2.0
 })
 
+-- Add the cube model
+local cubeIndex = luau3d.addModel(cube)
+print("Cube added with index", cubeIndex)
+
 -- Main game loop
 while luau3d.isRunning() do
     -- Get the time elapsed since last frame
@@ -56,12 +60,8 @@ while luau3d.isRunning() do
         time = time - colorChangeInterval
         currentColor = (currentColor % #colors) + 1
         color = colors[currentColor]
-        --print("Setting color:", color[1], color[2], color[3], color[4])
-        luau3d.setClearColor(color[1], color[2], color[3], color[4])
+        luau3d.setClearColor(table.unpack(color))
     end
-    
-    -- Draw the cube
-    luau3d.drawGeometry(cube)
     
     -- Present the frame
     luau3d.present()

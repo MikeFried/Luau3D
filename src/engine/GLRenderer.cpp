@@ -157,16 +157,88 @@ bool GLRenderer::isWindowOpen() const {
     return windowOpen;
 }
 
-void GLRenderer::setGeometryColor(float r, float g, float b) {
-    geometryColor[0] = r;
-    geometryColor[1] = g;
-    geometryColor[2] = b;
-}
-
 void GLRenderer::enableLighting(bool enable) {
     if (enable) {
         glEnable(GL_LIGHTING);
     } else {
         glDisable(GL_LIGHTING);
     }
+}
+
+void GLRenderer::render(const std::vector<Model>& models) {
+    // Enable vertex arrays for both position and color
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    
+    // Set up the modelview matrix
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, -1.5f);
+    
+    // Render all visible models
+    for (const auto& model : models) {
+        if (!model.visible) continue;
+        
+        const float* data = model.vertices.data();
+        // Stride is 6 floats (3 for position, 3 for color)
+        glVertexPointer(3, GL_FLOAT, 6 * sizeof(float), data);
+        // Color data starts 3 floats after each vertex
+        glColorPointer(3, GL_FLOAT, 6 * sizeof(float), data + 3);
+        
+        glDrawArrays(GL_TRIANGLES, 0, model.vertices.size() / 6);
+    }
+    
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+void GLRenderer::setLight(int lightNum, const LightProperties& properties) {
+    if (lightNum < 0 || lightNum > 7) return;
+    GLenum light = GL_LIGHT0 + lightNum;
+    
+    // Helper function to set float array
+    auto setFloatArray = [light](GLenum param, const std::vector<float>& values, int minSize, int maxSize) {
+        if (values.size() >= minSize && values.size() <= maxSize) {
+            float data[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+            for (size_t i = 0; i < values.size(); i++) {
+                data[i] = values[i];
+            }
+            glLightfv(light, param, data);
+        }
+    };
+    
+    // Set light properties
+    if (!properties.position.empty()) {
+        setFloatArray(GL_POSITION, properties.position, 3, 4);
+    }
+    if (!properties.ambient.empty()) {
+        setFloatArray(GL_AMBIENT, properties.ambient, 3, 4);
+    }
+    if (!properties.diffuse.empty()) {
+        setFloatArray(GL_DIFFUSE, properties.diffuse, 3, 4);
+    }
+    if (!properties.specular.empty()) {
+        setFloatArray(GL_SPECULAR, properties.specular, 3, 4);
+    }
+    if (!properties.spotDirection.empty()) {
+        setFloatArray(GL_SPOT_DIRECTION, properties.spotDirection, 3, 3);
+    }
+    
+    if (properties.spotExponent >= 0.0f) {
+        glLightf(light, GL_SPOT_EXPONENT, properties.spotExponent);
+    }
+    if (properties.spotCutoff >= 0.0f) {
+        glLightf(light, GL_SPOT_CUTOFF, properties.spotCutoff);
+    }
+    if (properties.constantAttenuation >= 0.0f) {
+        glLightf(light, GL_CONSTANT_ATTENUATION, properties.constantAttenuation);
+    }
+    if (properties.linearAttenuation >= 0.0f) {
+        glLightf(light, GL_LINEAR_ATTENUATION, properties.linearAttenuation);
+    }
+    if (properties.quadraticAttenuation >= 0.0f) {
+        glLightf(light, GL_QUADRATIC_ATTENUATION, properties.quadraticAttenuation);
+    }
+    
+    glEnable(light);
 }
