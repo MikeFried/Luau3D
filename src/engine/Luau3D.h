@@ -1,12 +1,12 @@
 #pragma once
 
 #include "ILuauModule.h"
-#include "GLRenderer.h"
+#include "IRenderer.h"
 #include <vector>
 
 class Luau3D : public ILuauModule {
 public:
-    Luau3D(GLRenderer* renderer);
+    Luau3D(IRenderer* renderer);
     ~Luau3D();
 
     // ILuauModule implementation
@@ -36,6 +36,6 @@ public:
     void updateModel(size_t index, const std::vector<float>& vertices, bool visible, const CFrame& cframe);
 
 private:
-    GLRenderer* renderer;
+    IRenderer* renderer;
     std::vector<Model> models;
 };

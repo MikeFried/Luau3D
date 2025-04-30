@@ -1,5 +1,4 @@
 #include "LuauBinding.h"
-#include "GLRenderer.h"
 #include "lua.h"
 #include "lualib.h"
 #include "luaconf.h"

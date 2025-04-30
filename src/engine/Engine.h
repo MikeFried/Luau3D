@@ -2,7 +2,7 @@
 
 #include <string>
 #include <memory>
-#include "GLRenderer.h"
+#include "IRenderer.h"
 #include "LuauBinding.h"
 #include "ILuauModule.h"
 #include "Luau3D.h"
@@ -22,7 +22,7 @@ public:
     bool loadScript(const std::string& scriptPath);
 
     // Get the renderer
-    GLRenderer* getRenderer() { return renderer.get(); }
+    IRenderer* getRenderer() { return renderer.get(); }
 
     // Get the Luau binding
     LuauBinding* getLuauBinding() { return luauBinding.get(); }
@@ -31,7 +31,7 @@ public:
     void registerModule(const ILuauModule* module);
 
 private:
-    std::unique_ptr<GLRenderer> renderer;
+    std::unique_ptr<IRenderer> renderer;
     std::unique_ptr<LuauBinding> luauBinding;
     std::unique_ptr<Luau3D> luau3d;
     bool isRunning;

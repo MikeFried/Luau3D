@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "GLRenderer.h"
 #include <iostream>
 
 Engine::Engine() : isRunning(false) {}

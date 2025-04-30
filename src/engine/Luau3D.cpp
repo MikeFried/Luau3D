@@ -8,7 +8,7 @@
 // Global instance pointer for Lua functions
 static Luau3D* g_luau3d = nullptr;
 
-Luau3D::Luau3D(GLRenderer* renderer) : renderer(renderer) {
+Luau3D::Luau3D(IRenderer* renderer) : renderer(renderer) {
     g_luau3d = this;
 }
 
