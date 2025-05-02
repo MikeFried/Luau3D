@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include "GLRenderer.h"
+#include "GUI.h"
 #include <iostream>
 
 Engine::Engine() : isRunning(false) {}
@@ -27,8 +28,12 @@ bool Engine::initialize(const std::string& windowTitle, int width, int height) {
         // Initialize Luau3D
         luau3d = std::make_unique<Luau3D>(renderer.get());
 
+        // Initialize GUI
+        gui = std::make_unique<GUI>(renderer.get(), luauBinding.get());
+
         // Register modules
         registerModule(luau3d.get());
+        registerModule(gui.get());
 
         isRunning = true;
         return true;

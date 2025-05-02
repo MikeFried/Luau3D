@@ -4,6 +4,7 @@
 #include "IRenderer.h"
 #include "lua.h"
 #include <vector>
+#include <chrono>
 
 class Luau3D : public ILuauModule {
 public:
@@ -44,4 +45,5 @@ private:
     IRenderer* renderer;
     std::vector<Model> models;
     int beforeRenderCallbackRef;
+    std::chrono::steady_clock::time_point lastDeltaTime;
 };

@@ -4,12 +4,14 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <chrono>
 
 // Global instance pointer for Lua functions
 static Luau3D* g_luau3d = nullptr;
 
 Luau3D::Luau3D(IRenderer* renderer) : renderer(renderer), beforeRenderCallbackRef(LUA_NOREF) {
     g_luau3d = this;
+    lastDeltaTime = std::chrono::steady_clock::now();
 }
 
 Luau3D::~Luau3D() {
@@ -40,8 +42,13 @@ int Luau3D::setClearColor(lua_State* L) {
 }
 
 int Luau3D::getDeltaTime(lua_State* L) {
-    // For now, return a fixed delta time
-    lua_pushnumber(L, 1.0 / 60.0);
+    Luau3D* instance = getInstance(L);
+    if (!instance) return 0;
+    
+    auto now = std::chrono::steady_clock::now();
+    auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - instance->lastDeltaTime);
+    instance->lastDeltaTime = now;
+    lua_pushnumber(L, delta.count() / 1000.0);
     return 1;
 }
 
@@ -64,6 +71,7 @@ int Luau3D::present(lua_State* L) {
     instance->callBeforeRenderCallback(L);
     instance->renderer->render(instance->models);
     instance->renderer->endFrame();
+    
     return 0;
 }
 

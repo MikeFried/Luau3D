@@ -1,11 +1,32 @@
 #include "GLRenderer.h"
+#include "GUI.h"
 #include <iostream>
+
+// TODO: Move all window processing logic to the GUI class
+// Forward declare the GUI instance
+extern GUI* g_gui;
 
 // Window procedure callback
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_CLOSE:
             PostQuitMessage(0);
+            return 0;
+
+        case WM_KEYDOWN:
+        case WM_KEYUP:
+            if (g_gui) {
+                // Convert virtual key code to string
+                char keyName[32];
+                if (GetKeyNameTextA(lParam, keyName, sizeof(keyName)) > 0) {
+                    // Convert to lowercase for consistency
+                    for (char* p = keyName; *p; ++p) {
+                        *p = tolower(*p);
+                    }
+                    // Forward the event to the GUI module
+                    g_gui->handleKeyEvent(keyName, uMsg == WM_KEYDOWN ? "press" : "release");
+                }
+            }
             return 0;
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);

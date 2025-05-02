@@ -1,11 +1,9 @@
 -- Simple test script for Luau3D engine
 
-print("Script started")
-
 -- Load required modules
 local model = require("model.luau")
 local luau3d = require("luau3d.luau")
-print("Model module loaded")
+local gui = require("gui.luau")
 
 -- Create a cube with initial CFrame
 local cube = model.createCube(0.5, {
@@ -14,7 +12,6 @@ local cube = model.createCube(0.5, {
     up = {0, 1, 0},
     right = {1, 0, 0}
 })
-print("Cube created")
 
 -- Initial setup
 local time = 0 -- seconds of simulation time total
@@ -30,8 +27,6 @@ local colorChangeInterval = 1.0  -- Change color every second
 -- Set the initial color
 local color = colors[currentColor]
 luau3d.setClearColor(table.unpack(color))
-
-print("Entering main loop")
 
 -- Set up main light
 luau3d.setLight(1, {
@@ -52,22 +47,55 @@ luau3d.setLight(2, {
 
 -- Add the cube model
 local cubeIndex = luau3d.addModel(cube)
-print("Cube added with index", cubeIndex)
+
+local cubePosition = {0, 0, -3}
+local keysPressed = {}
+gui.registerKeyboardCallback(function(key: string, action: gui.KeyboardAction)
+    if action == "press" then keysPressed[key] = true end
+    if action == "release" then keysPressed[key] = nil end
+end)
+
+-- Moves the cube by moveAmt units per second
+local moveAmt = 2
+local keyMoveRates = {
+    w = {0, moveAmt, 0},
+    a = {-moveAmt, 0, 0},
+    s = {0, -moveAmt, 0},
+    d = {moveAmt, 0, 0},
+}
+
+local function fmaVec3(vec1: {number}, vec2: {number}, scalar: number)
+    return {
+        vec1[1] + vec2[1] * scalar,
+        vec1[2] + vec2[2] * scalar,
+        vec1[3] + vec2[3] * scalar,
+    }
+end
+
+local changeBackground = false
 
 -- Main game loop
 function beforeRender()
     -- Get the time elapsed since last frame
     local dt = luau3d.getDeltaTime()
+    --print("dt: " .. tostring(dt))
     time = time + dt
     
     -- Change color every second
-    if time >= colorChangeInterval then
+    if time >= colorChangeInterval and changeBackground then
         time = time - colorChangeInterval
         currentColor = (currentColor % #colors) + 1
         color = colors[currentColor]
         luau3d.setClearColor(table.unpack(color))
     end
     
+    -- Update cube's position
+    for key, vec in pairs(keyMoveRates) do
+        if keysPressed[key] then
+            cubePosition = fmaVec3(cubePosition, vec, dt)
+        end
+    end
+
     -- Update cube's CFrame to make it rotate
     local angle = time * math.pi * 0.5  -- Rotate 90 degrees per second
     local cosAngle = math.cos(angle)
@@ -77,7 +105,7 @@ function beforeRender()
         vertices = cube.vertices,
         visible = true,
         cframe = {
-            position = {0, 0, -3},  -- Keep the same position
+            position = cubePosition,
             look = {sinAngle, 0, -cosAngle},
             up = {0, 1, 0},
             right = {cosAngle, 0, sinAngle}
@@ -87,5 +115,3 @@ end
 
 -- Register the beforeRender callback
 luau3d.registerBeforeRenderCallback(beforeRender)
-
-print("Script ended") 

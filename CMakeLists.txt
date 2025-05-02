@@ -31,6 +31,8 @@ set(SOURCES
     src/engine/GLRenderer.h
     src/engine/Config.cpp
     src/engine/Config.h
+    src/engine/GUI.cpp
+    src/engine/GUI.h
 )
 
 # Create executable

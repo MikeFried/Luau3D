@@ -6,6 +6,7 @@
 #include "LuauBinding.h"
 #include "ILuauModule.h"
 #include "Luau3D.h"
+#include "GUI.h"
 
 class Engine {
 public:
@@ -31,8 +32,9 @@ public:
     void registerModule(const ILuauModule* module);
 
 private:
+    bool isRunning;
     std::unique_ptr<IRenderer> renderer;
     std::unique_ptr<LuauBinding> luauBinding;
     std::unique_ptr<Luau3D> luau3d;
-    bool isRunning;
+    std::unique_ptr<GUI> gui;
 }; 
