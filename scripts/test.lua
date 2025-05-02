@@ -55,7 +55,7 @@ local cubeIndex = luau3d.addModel(cube)
 print("Cube added with index", cubeIndex)
 
 -- Main game loop
-while luau3d.isRunning() do
+function beforeRender()
     -- Get the time elapsed since last frame
     local dt = luau3d.getDeltaTime()
     time = time + dt
@@ -83,9 +83,9 @@ while luau3d.isRunning() do
             right = {cosAngle, 0, sinAngle}
         }
     })
-    
-    -- Present the frame
-    luau3d.present()
 end
+
+-- Register the beforeRender callback
+luau3d.registerBeforeRenderCallback(beforeRender)
 
 print("Script ended") 

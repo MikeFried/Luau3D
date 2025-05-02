@@ -36,6 +36,9 @@ public:
     // Make a table for internal module exports
     void makeTableForInternalModule(lua_State *L, const LuauExport exports[]);
 
+    // Get the Lua state
+    lua_State* getLuaState() const { return L; }
+
 private:
     lua_State* L;
     std::string currentScriptPath;

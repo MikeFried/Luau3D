@@ -45,17 +45,11 @@ void Engine::registerModule(const ILuauModule* module) {
 }
 
 void Engine::run() {
-    while (isRunning) {
-        // Execute any pending Luau code
-        luauBinding->execute();
+    // Execute any pending Luau code
+    luauBinding->execute();
 
-        // Render
-        renderer->beginFrame();
-        renderer->clear();
-        renderer->endFrame();
-
-        // Check if we should continue running
-        isRunning = renderer->isWindowOpen();
+    while (renderer->isWindowOpen()) {
+        luau3d->present(luauBinding->getLuaState());
     }
 }
 

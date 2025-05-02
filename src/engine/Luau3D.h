@@ -2,6 +2,7 @@
 
 #include "ILuauModule.h"
 #include "IRenderer.h"
+#include "lua.h"
 #include <vector>
 
 class Luau3D : public ILuauModule {
@@ -24,6 +25,7 @@ public:
     static int setModelVisible(lua_State* L);
     static int updateModel(lua_State* L);
     static int setLight(lua_State* L);
+    static int registerBeforeRenderCallback(lua_State* L);
 
     // Helper to get the Luau3D instance from Lua state
     static Luau3D* getInstance(lua_State* L);
@@ -35,7 +37,11 @@ public:
     void setModelVisible(size_t index, bool visible);
     void updateModel(size_t index, const std::vector<float>& vertices, bool visible, const CFrame& cframe);
 
+    // Call the beforeRender callback if registered
+    void callBeforeRenderCallback(lua_State* L);
+
 private:
     IRenderer* renderer;
     std::vector<Model> models;
+    int beforeRenderCallbackRef;
 };

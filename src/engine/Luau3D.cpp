@@ -8,7 +8,7 @@
 // Global instance pointer for Lua functions
 static Luau3D* g_luau3d = nullptr;
 
-Luau3D::Luau3D(IRenderer* renderer) : renderer(renderer) {
+Luau3D::Luau3D(IRenderer* renderer) : renderer(renderer), beforeRenderCallbackRef(LUA_NOREF) {
     g_luau3d = this;
 }
 
@@ -61,6 +61,7 @@ int Luau3D::present(lua_State* L) {
     
     instance->renderer->beginFrame();
     instance->renderer->clear();
+    instance->callBeforeRenderCallback(L);
     instance->renderer->render(instance->models);
     instance->renderer->endFrame();
     return 0;
@@ -275,6 +276,43 @@ int Luau3D::setLight(lua_State* L) {
     return 1;
 }
 
+int Luau3D::registerBeforeRenderCallback(lua_State* L) {
+    Luau3D* instance = getInstance(L);
+    if (!instance) return 0;
+    
+    // Check if we have a function as the first argument
+    if (!lua_isfunction(L, 1)) {
+        luaL_error(L, "Expected function as first argument");
+        return 0;
+    }
+    
+    // Store the callback function in the registry
+    lua_pushvalue(L, 1);  // Push the function to the top
+    int ref = lua_ref(L, -1);  // Reference the value at the top of the stack
+    lua_pop(L, 1);  // Pop the function from the stack
+    
+    if (ref == LUA_NOREF) {
+        luaL_error(L, "Failed to create reference to callback function");
+        return 0;
+    }
+    
+    // Store the reference
+    instance->beforeRenderCallbackRef = ref;
+    
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+void Luau3D::callBeforeRenderCallback(lua_State* L) {
+    if (beforeRenderCallbackRef != LUA_NOREF) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, beforeRenderCallbackRef);
+        if (lua_pcall(L, 0, 0, 0) != 0) {
+            std::cerr << "Error in beforeRender callback: " << lua_tostring(L, -1) << std::endl;
+            lua_pop(L, 1);
+        }
+    }
+}
+
 // Model management implementation
 size_t Luau3D::addModel(const std::vector<float>& vertices, bool visible, const CFrame& cframe) {
     Model model;
@@ -313,13 +351,13 @@ static LuauExport Luau3dExports[] = {
     {"setClearColor", Luau3D::setClearColor},
     {"getDeltaTime", Luau3D::getDeltaTime},
     {"isRunning", Luau3D::isRunning},
-    {"present", Luau3D::present},
     {"addModel", Luau3D::addModel},
     {"removeModel", Luau3D::removeModel},
     {"clearModels", Luau3D::clearModels},
     {"setModelVisible", Luau3D::setModelVisible},
     {"updateModel", Luau3D::updateModel},
     {"setLight", Luau3D::setLight},
+    {"registerBeforeRenderCallback", Luau3D::registerBeforeRenderCallback},
     {nullptr, nullptr}
 };
 

@@ -30,8 +30,6 @@ export type Luau3D = {
     isRunning: () -> boolean,
     -- Returns the time since the last frame in seconds
     getDeltaTime: () -> number,
-    -- Presents the current frame
-    present: () -> boolean,
     -- Adds a new model and returns its index
     addModel: (properties: ModelProperties) -> number,
     -- Removes a model by index
@@ -46,6 +44,8 @@ export type Luau3D = {
     setClearColor: (r: number, g: number, b: number, a: number) -> boolean,
     -- Sets the light properties for the next frame
     setLight: (lightNumber: number, properties: LightProperties) -> boolean,
+    -- Registers a callback function to be called before rendering each frame
+    registerBeforeRenderCallback: (callback: () -> ()) -> boolean,
 }
 
 local luau3d = {}
@@ -106,6 +106,12 @@ end
 
 -- Sets the light properties for the next frame
 luau3d.setLight = function(lightNumber, properties)
+    -- This is a placeholder for the actual implementation provided by the engine
+    return true
+end
+
+-- Registers a callback function to be called before rendering each frame
+luau3d.registerBeforeRenderCallback = function(callback)
     -- This is a placeholder for the actual implementation provided by the engine
     return true
 end
