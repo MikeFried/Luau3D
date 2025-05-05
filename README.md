@@ -12,15 +12,19 @@ A simple cross-platform game engine prototype using C++, Luau VM, and OpenGL.
 
 ### Working features
 - Launch with parameters, load a Luau file
-- Require relative to the Luau file
-- Overrides for Require to load binary module
-- 3D binary module
+- Luau require works relative to the Luau file
+- Overrides for Require to load binary modules
+- 2 binary modules exist: Luau3D and GUI
+- Renders 3D meshes from Luau
+- Keyboard input integrated into GUI module
+- Accurate to the millisecond timing for beforeUpdate math
 
 ### Technical debt / planned changes
 - C++ binding mechanism needs a way to dynamically load DLL as runtime
 - Will likely rework ILuauModule
-- Message pump within present should be moved elsewhere
+- Need to clean up message pump
 - More control over GUI window needs to be given to Luau
+- Need to remove tight global dependencies between GLRenderer and GUI module as they flow the wrong way
 
 ### Bugs
 - Window event processing pauses frames when dragging
