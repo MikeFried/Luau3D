@@ -62,6 +62,8 @@ local keyMoveRates = {
     a = {-moveAmt, 0, 0},
     s = {0, -moveAmt, 0},
     d = {moveAmt, 0, 0},
+    q = {0, 0, -moveAmt},
+    e = {0, 0, moveAmt},
 }
 
 local function fmaVec3(vec1: {number}, vec2: {number}, scalar: number)
@@ -73,6 +75,7 @@ local function fmaVec3(vec1: {number}, vec2: {number}, scalar: number)
 end
 
 local changeBackground = false
+local angle = 0
 
 -- Main game loop
 function beforeRender()
@@ -97,7 +100,12 @@ function beforeRender()
     end
 
     -- Update cube's CFrame to make it rotate
-    local angle = time * math.pi * 0.5  -- Rotate 90 degrees per second
+    if keysPressed["-"] then
+        angle = angle + dt * math.pi * 0.5  -- Rotate 90 degrees per second
+    end
+    if keysPressed["="] then
+        angle = angle - dt * math.pi * 0.5  -- Rotate 90 degrees per second
+    end
     local cosAngle = math.cos(angle)
     local sinAngle = math.sin(angle)
     
