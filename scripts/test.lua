@@ -76,6 +76,8 @@ end
 
 local changeBackground = false
 local angle = 0
+local xAngle = 0  -- New angle for X-axis rotation
+local zAngle = 0  -- New angle for Z-axis rotation
 
 -- Main game loop
 function beforeRender()
@@ -106,17 +108,53 @@ function beforeRender()
     if keysPressed["="] then
         angle = angle - dt * math.pi * 0.5  -- Rotate 90 degrees per second
     end
+    if keysPressed["["] then
+        xAngle = xAngle + dt * math.pi * 0.5  -- Rotate 90 degrees per second
+    end
+    if keysPressed["]"] then
+        xAngle = xAngle - dt * math.pi * 0.5  -- Rotate 90 degrees per second
+    end
+    if keysPressed[";"] then
+        zAngle = zAngle + dt * math.pi * 0.5  -- Rotate 90 degrees per second
+    end
+    if keysPressed["'"] then
+        zAngle = zAngle - dt * math.pi * 0.5  -- Rotate 90 degrees per second
+    end
+    
     local cosAngle = math.cos(angle)
     local sinAngle = math.sin(angle)
+    local cosXAngle = math.cos(xAngle)
+    local sinXAngle = math.sin(xAngle)
+    local cosZAngle = math.cos(zAngle)
+    local sinZAngle = math.sin(zAngle)
+    
+    -- Calculate the rotated basis vectors
+    local look = {
+        sinAngle * cosXAngle * cosZAngle - sinXAngle * sinZAngle,
+        sinXAngle * cosZAngle + sinAngle * cosXAngle * sinZAngle,
+        -cosAngle * cosXAngle
+    }
+    
+    local up = {
+        -sinAngle * sinXAngle * cosZAngle - cosXAngle * sinZAngle,
+        cosXAngle * cosZAngle - sinAngle * sinXAngle * sinZAngle,
+        cosAngle * sinXAngle
+    }
+    
+    local right = {
+        cosAngle * cosZAngle,
+        cosAngle * sinZAngle,
+        sinAngle
+    }
     
     luau3d.updateModel(cubeIndex, {
         vertices = cube.vertices,
         visible = true,
         cframe = {
             position = cubePosition,
-            look = {sinAngle, 0, -cosAngle},
-            up = {0, 1, 0},
-            right = {cosAngle, 0, sinAngle}
+            look = look,
+            up = up,
+            right = right
         }
     })
 end

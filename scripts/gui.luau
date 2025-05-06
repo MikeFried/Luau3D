@@ -7,8 +7,4 @@ export type GUI = {
     registerKeyboardCallback: (callback: KeyboardCallback) -> boolean,
 }
 
-local gui = {}
-
--- Placeholder for future GUI methods
-
-return gui :: GUI 
+return {} :: GUI 
