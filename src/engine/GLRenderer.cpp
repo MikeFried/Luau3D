@@ -2,37 +2,7 @@
 #include "GUI.h"
 #include <iostream>
 
-// TODO: Move all window processing logic to the GUI class
-// Forward declare the GUI instance
-extern GUI* g_gui;
-
-// Window procedure callback
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    switch (uMsg) {
-        case WM_CLOSE:
-            PostQuitMessage(0);
-            return 0;
-
-        case WM_KEYDOWN:
-        case WM_KEYUP:
-            if (g_gui) {
-                // Convert virtual key code to string
-                char keyName[32];
-                if (GetKeyNameTextA(lParam, keyName, sizeof(keyName)) > 0) {
-                    // Convert to lowercase for consistency
-                    for (char* p = keyName; *p; ++p) {
-                        *p = tolower(*p);
-                    }
-                    // Forward the event to the GUI module
-                    g_gui->handleKeyEvent(keyName, uMsg == WM_KEYDOWN ? "press" : "release");
-                }
-            }
-            return 0;
-    }
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-
-GLRenderer::GLRenderer() : width(0), height(0), hwnd(nullptr), hdc(nullptr), hrc(nullptr), windowOpen(true) {
+GLRenderer::GLRenderer(IGUI* gui) : gui(gui), hrc(nullptr) {
     clearColor[0] = 0.0f;
     clearColor[1] = 0.0f;
     clearColor[2] = 0.0f;
@@ -44,73 +14,12 @@ GLRenderer::~GLRenderer() {
         wglMakeCurrent(nullptr, nullptr);
         wglDeleteContext(hrc);
     }
-    if (hwnd) {
-        ReleaseDC(hwnd, hdc);
-        DestroyWindow(hwnd);
-    }
 }
 
-bool GLRenderer::initialize(const std::string& windowTitle, int w, int h) {
-    width = w;
-    height = h;
-
-    // Register window class
-    WNDCLASSEX wc = {};
-    wc.cbSize = sizeof(WNDCLASSEX);
-    wc.style = CS_OWNDC;
-    wc.lpfnWndProc = WindowProc;
-    wc.hInstance = GetModuleHandle(nullptr);
-    wc.lpszClassName = "Luau3DWindow";
-    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    
-    if (!RegisterClassEx(&wc)) {
-        std::cerr << "Failed to register window class" << std::endl;
-        return false;
-    }
-
-    // Create window
-    hwnd = CreateWindowEx(
-        0,
-        "Luau3DWindow",
-        windowTitle.c_str(),
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        width, height,
-        nullptr,
-        nullptr,
-        GetModuleHandle(nullptr),
-        nullptr
-    );
-
-    if (!hwnd) {
-        std::cerr << "Failed to create window" << std::endl;
-        return false;
-    }
-
-    // Get device context
-    hdc = GetDC(hwnd);
-
-    // Set up pixel format
-    PIXELFORMATDESCRIPTOR pfd = {};
-    pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-    pfd.nVersion = 1;
-    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-    pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = 32;
-    pfd.cDepthBits = 24;
-    pfd.cStencilBits = 8;
-    pfd.iLayerType = PFD_MAIN_PLANE;
-
-    int pixelFormat = ChoosePixelFormat(hdc, &pfd);
-    if (!pixelFormat) {
-        std::cerr << "Failed to choose pixel format" << std::endl;
-        return false;
-    }
-
-    if (!SetPixelFormat(hdc, pixelFormat, &pfd)) {
-        std::cerr << "Failed to set pixel format" << std::endl;
-        return false;
-    }
+bool GLRenderer::initialize() {
+    WindowInfo handle = gui->getWindowInfo();
+    HDC hdc = static_cast<HDC>(handle.context);
+    HWND hwnd = static_cast<HWND>(handle.handle);
 
     // Create OpenGL context
     hrc = wglCreateContext(hdc);
@@ -146,19 +55,11 @@ bool GLRenderer::initialize(const std::string& windowTitle, int w, int h) {
 }
 
 void GLRenderer::beginFrame() {
-    // Process window messages
-    MSG msg = {};
-    while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-        if (msg.message == WM_QUIT) {
-            windowOpen = false;
-            return;
-        }
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
 }
 
 void GLRenderer::endFrame() {
+    WindowInfo handle = gui->getWindowInfo();
+    HDC hdc = static_cast<HDC>(handle.context);
     SwapBuffers(hdc);
 }
 
@@ -172,10 +73,6 @@ void GLRenderer::setClearColor(float r, float g, float b, float a) {
     clearColor[1] = g;
     clearColor[2] = b;
     clearColor[3] = a;
-}
-
-bool GLRenderer::isWindowOpen() const {
-    return windowOpen;
 }
 
 void GLRenderer::enableLighting(bool enable) {

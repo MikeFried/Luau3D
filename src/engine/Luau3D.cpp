@@ -9,7 +9,7 @@
 // Global instance pointer for Lua functions
 static Luau3D* g_luau3d = nullptr;
 
-Luau3D::Luau3D(IRenderer* renderer) : renderer(renderer), beforeRenderCallbackRef(LUA_NOREF) {
+Luau3D::Luau3D(IGUI* gui, IRenderer* renderer) : gui(gui), renderer(renderer), beforeRenderCallbackRef(LUA_NOREF) {
     g_luau3d = this;
     lastDeltaTime = std::chrono::steady_clock::now();
 }
@@ -58,7 +58,7 @@ int Luau3D::isRunning(lua_State* L) {
         lua_pushboolean(L, false);
         return 1;
     }
-    lua_pushboolean(L, instance->renderer->isWindowOpen());
+    lua_pushboolean(L, instance->gui->isWindowOpen());
     return 1;
 }
 
@@ -66,6 +66,7 @@ int Luau3D::present(lua_State* L) {
     Luau3D* instance = getInstance(L);
     if (!instance) return 0;
     
+    instance->gui->pumpMessages();
     instance->renderer->beginFrame();
     instance->renderer->clear();
     instance->callBeforeRenderCallback(L);

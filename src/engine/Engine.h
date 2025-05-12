@@ -6,8 +6,9 @@
 #include "LuauBinding.h"
 #include "ILuauModule.h"
 #include "Luau3D.h"
-#include "GUI.h"
+#include "IGUI.h"
 
+// The main engine class
 class Engine {
 public:
     Engine();
@@ -22,19 +23,12 @@ public:
     // Load and execute a Luau script
     bool loadScript(const std::string& scriptPath);
 
-    // Get the renderer
-    IRenderer* getRenderer() { return renderer.get(); }
-
-    // Get the Luau binding
-    LuauBinding* getLuauBinding() { return luauBinding.get(); }
-
     // Register a module with the Luau binding
     void registerModule(const ILuauModule* module);
 
 private:
-    bool isRunning;
     std::unique_ptr<IRenderer> renderer;
     std::unique_ptr<LuauBinding> luauBinding;
     std::unique_ptr<Luau3D> luau3d;
-    std::unique_ptr<GUI> gui;
+    std::unique_ptr<IGUI> gui;
 }; 

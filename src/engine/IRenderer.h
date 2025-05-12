@@ -45,8 +45,8 @@ class IRenderer {
 public:
     virtual ~IRenderer() = default;
 
-    // Initialize renderer context and window
-    virtual bool initialize(const std::string& windowTitle, int width, int height) = 0;
+    // Initialize renderer context
+    virtual bool initialize() = 0;
 
     // Begin a new frame
     virtual void beginFrame() = 0;
@@ -63,9 +63,6 @@ public:
     // Get window dimensions
     virtual int getWidth() const = 0;
     virtual int getHeight() const = 0;
-
-    // Check if window is still open
-    virtual bool isWindowOpen() const = 0;
 
     // Light management
     virtual void setLight(int lightNum, const LightProperties& properties) = 0;

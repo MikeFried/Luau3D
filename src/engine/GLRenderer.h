@@ -4,14 +4,15 @@
 #include <windows.h>
 #include <GL/gl.h>
 #include "IRenderer.h"
+#include "IGUI.h"
 
 class GLRenderer : public IRenderer {
 public:
-    GLRenderer();
+    GLRenderer(IGUI* gui);
     ~GLRenderer();
 
-    // Initialize OpenGL context and window
-    bool initialize(const std::string& windowTitle, int width, int height) override;
+    // Initialize OpenGL context
+    bool initialize() override;
 
     // Begin a new frame
     void beginFrame() override;
@@ -29,9 +30,6 @@ public:
     int getWidth() const override { return width; }
     int getHeight() const override { return height; }
 
-    // Check if window is still open
-    bool isWindowOpen() const override;
-
     // Light management
     void setLight(int lightNum, const LightProperties& properties) override;
     void enableLighting(bool enable) override;
@@ -40,11 +38,9 @@ public:
     void render(const std::vector<Model>& models) override;
 
 private:
+    float clearColor[4];
+    HGLRC hrc;
+    IGUI* gui;
     int width;
     int height;
-    float clearColor[4];
-    HWND hwnd;
-    HDC hdc;
-    HGLRC hrc;
-    bool windowOpen;
 }; 

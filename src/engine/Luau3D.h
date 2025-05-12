@@ -2,13 +2,14 @@
 
 #include "ILuauModule.h"
 #include "IRenderer.h"
+#include "IGUI.h"
 #include "lua.h"
 #include <vector>
 #include <chrono>
 
 class Luau3D : public ILuauModule {
 public:
-    Luau3D(IRenderer* renderer);
+    Luau3D(IGUI* gui, IRenderer* renderer);
     ~Luau3D();
 
     // ILuauModule implementation
@@ -42,6 +43,7 @@ public:
     void callBeforeRenderCallback(lua_State* L);
 
 private:
+    IGUI* gui;
     IRenderer* renderer;
     std::vector<Model> models;
     int beforeRenderCallbackRef;
