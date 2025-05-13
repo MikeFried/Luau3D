@@ -18,6 +18,24 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/luau/CMakeLists.txt")
     endif()
 endif()
 
+# Platform-specific source files
+set(PLATFORM_SOURCES)
+if(WIN32)
+    set(PLATFORM_SOURCES
+        src/engine/Windows/GLRenderer.cpp
+        src/engine/Windows/GLRenderer.h
+        src/engine/Windows/GUI.cpp
+        src/engine/Windows/GUI.h
+    )
+elseif(APPLE)
+    set(PLATFORM_SOURCES
+        src/engine/Mac/GLRenderer.cpp
+        src/engine/Mac/GLRenderer.h
+        src/engine/Mac/GUI.cpp
+        src/engine/Mac/GUI.h
+    )
+endif()
+
 # Add source files
 set(SOURCES
     src/main.cpp
@@ -27,12 +45,9 @@ set(SOURCES
     src/engine/Luau3D.h
     src/engine/LuauBinding.cpp
     src/engine/LuauBinding.h
-    src/engine/Windows/GLRenderer.cpp
-    src/engine/Windows/GLRenderer.h
     src/engine/Config.cpp
     src/engine/Config.h
-    src/engine/Windows/GUI.cpp
-    src/engine/Windows/GUI.h
+    ${PLATFORM_SOURCES}
 )
 
 # Create executable
@@ -61,14 +76,26 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Luau.Common
 )
 
-# OpenGL
-if(WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE opengl32)
-elseif(UNIX)
-    target_link_libraries(${PROJECT_NAME} PRIVATE GL)
-endif()
-
-# Windows-specific settings
+# Platform-specific settings
 if(WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE WIN32_LEAN_AND_MEAN)
+    target_link_libraries(${PROJECT_NAME} PRIVATE opengl32)
+elseif(APPLE)
+    find_library(COCOA_LIBRARY Cocoa)
+    find_library(OPENGL_LIBRARY OpenGL)
+    find_library(IOKIT_LIBRARY IOKit)
+    find_library(COREVIDEO_LIBRARY CoreVideo)
+    
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${COCOA_LIBRARY}
+        ${OPENGL_LIBRARY}
+        ${IOKIT_LIBRARY}
+        ${COREVIDEO_LIBRARY}
+    )
+    
+    # Set minimum macOS version
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_RPATH 1
+        MACOSX_DEPLOYMENT_TARGET "10.15"
+    )
 endif() 

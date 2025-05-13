@@ -1,6 +1,11 @@
 #include "Engine.h"
+#ifdef _WIN32
 #include "Windows/GLRenderer.h"
 #include "Windows/GUI.h"
+#elif defined(__APPLE__)
+#include "Mac/GLRenderer.h"
+#include "Mac/GUI.h"
+#endif
 #include <iostream>
 
 Engine::Engine() {}
