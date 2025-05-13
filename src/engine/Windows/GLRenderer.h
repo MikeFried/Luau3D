@@ -3,8 +3,8 @@
 #define NOMINMAX
 #include <windows.h>
 #include <GL/gl.h>
-#include "IRenderer.h"
-#include "IGUI.h"
+#include "../IRenderer.h"
+#include "../IGUI.h"
 
 class GLRenderer : public IRenderer {
 public:

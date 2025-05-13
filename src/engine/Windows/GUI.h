@@ -5,10 +5,10 @@
 #include <string>
 #include <functional>
 #include <vector>
-#include "ILuauModule.h"
-#include "IGUI.h"
-#include "IRenderer.h"
-#include "LuauBinding.h"
+#include "../ILuauModule.h"
+#include "../IGUI.h"
+#include "../IRenderer.h"
+#include "../LuauBinding.h"
 #include "lua.h"
 
 class GUI : public IGUI {

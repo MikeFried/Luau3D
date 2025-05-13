@@ -27,12 +27,12 @@ set(SOURCES
     src/engine/Luau3D.h
     src/engine/LuauBinding.cpp
     src/engine/LuauBinding.h
-    src/engine/GLRenderer.cpp
-    src/engine/GLRenderer.h
+    src/engine/Windows/GLRenderer.cpp
+    src/engine/Windows/GLRenderer.h
     src/engine/Config.cpp
     src/engine/Config.h
-    src/engine/GUI.cpp
-    src/engine/GUI.h
+    src/engine/Windows/GUI.cpp
+    src/engine/Windows/GUI.h
 )
 
 # Create executable
