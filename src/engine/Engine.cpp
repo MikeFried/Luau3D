@@ -1,6 +1,6 @@
 #include "Engine.h"
-#include "GLRenderer.h"
-#include "GUI.h"
+#include "Windows/GLRenderer.h"
+#include "Windows/GUI.h"
 #include <iostream>
 
 Engine::Engine() {}
