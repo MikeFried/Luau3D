@@ -40,4 +40,17 @@ private:
     IGUI* gui;
     int width;
     int height;
+    void* glContext; // (NSOpenGLContext*)
+    void* glView;    // (NSOpenGLView*)
+
+    // Modern OpenGL
+    unsigned int shaderProgram;
+    unsigned int vao, vbo;
+    int uMVP; // uniform location for MVP matrix
+    bool glInited;
+    void ensureGLObjects();
+    void destroyGLObjects();
+    void setupShaders();
+    void setupBuffers();
+    void setMVP(const float* mvp);
 }; 
