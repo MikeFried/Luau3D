@@ -31,7 +31,7 @@ elseif(APPLE)
     set(PLATFORM_SOURCES
         src/engine/Mac/GLRenderer.cpp
         src/engine/Mac/GLRenderer.h
-        src/engine/Mac/GUI.cpp
+        src/engine/Mac/GUI.mm
         src/engine/Mac/GUI.h
     )
 endif()

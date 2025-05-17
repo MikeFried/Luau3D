@@ -31,6 +31,7 @@ public:
     // Keyboard callback handling
     void registerKeyboardCallback(int callbackRef);
     void handleKeyEvent(const std::string& key, const std::string& action) override;
+    void onWindowClosed();
 
     // Get window handle
     WindowInfo getWindowInfo() const override;
@@ -41,4 +42,6 @@ private:
     int height;
     bool windowOpen;
     std::vector<int> keyboardCallbacks;  // References to Lua callback functions
+    void* window;    // (NSWindow*) Cocoa window, used in GUI.mm
+    void* delegate;  // (MacWindowDelegate*) Cocoa delegate, used in GUI.mm
 }; 
