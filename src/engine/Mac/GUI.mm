@@ -78,6 +78,11 @@ bool GUI::initialize(const std::string& windowTitle, int width, int height) {
     if ([NSApp class] == nil) {
         [NSApplication sharedApplication];
     }
+    
+    // Make sure the application is properly activated to receive events
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+    [NSApp activateIgnoringOtherApps:YES];
+    
     NSRect rect = NSMakeRect(0, 0, width, height);
     NSUInteger style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskResizable;
     NSWindow* win = [[NSWindow alloc] initWithContentRect:rect
@@ -108,6 +113,7 @@ bool GUI::isWindowOpen() const {
 
 void GUI::pumpMessages() {
     @autoreleasepool {
+        // Process pending events in the queue
         NSEvent* event;
         while ((event = [NSApp nextEventMatchingMask:NSEventMaskAny
                                             untilDate:[NSDate distantPast]
@@ -121,6 +127,9 @@ void GUI::pumpMessages() {
                 [NSApp sendEvent:event];
             }
         }
+        
+        // Allow NSApp to update the window state and run other app logic
+        [NSApp updateWindows];
     }
 }
 
@@ -185,7 +194,6 @@ void GUI::handleKeyEvent(const std::string& key, const std::string& action) {
             lua_pop(L, 1);
         }
     }
-    std::cout << "[Mac] Key event: " << key << " - " << action << std::endl;
 }
 
 // Define exports array

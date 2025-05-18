@@ -183,6 +183,7 @@ void GLRenderer::beginFrame() {
 void GLRenderer::endFrame() {
     NSOpenGLContext* ctx = (NSOpenGLContext*)glContext;
     [ctx flushBuffer];
+    [ctx update];
 }
 
 void GLRenderer::clear() {
@@ -225,18 +226,7 @@ void GLRenderer::render(const std::vector<Model>& models) {
     glEnableVertexAttribArray(0); // Position
     glEnableVertexAttribArray(1); // Color
     
-    // Simple projection matrix
-    float projMatrix[16] = {
-        0.5f, 0.0f, 0.0f, 0.0f,   // Scale X by 0.5
-        0.0f, 0.5f, 0.0f, 0.0f,   // Scale Y by 0.5
-        0.0f, 0.0f, -0.5f, -0.5f, // Fixed Z transformation for visible depth
-        0.0f, 0.0f, -0.5f, 0.0f   // Z offset
-    };
-
     const int stride = 6 * sizeof(float);
-
-    // Use projection matrix
-    setMVP(projMatrix);
     
     // Now try to draw the models
     for (const auto& model : models) {
@@ -250,14 +240,14 @@ void GLRenderer::render(const std::vector<Model>& models) {
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
         
-        // Use identity matrix for simplicity
-        float identityMatrix[16] = {
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
+        // Use projection matrix
+        float projectionMatrix[16] = {
+            0.5f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.5f, 0.0f, 0.0f,
+            0.0f, 0.0f, -1.0f, 0.0f,
             0.0f, 0.0f, 0.0f, 1.0f
         };
-        setMVP(identityMatrix);
+        setMVP(projectionMatrix);
         
         // Draw model
         int vertexCount = model.vertices.size() / 6;
